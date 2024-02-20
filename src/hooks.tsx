@@ -1,26 +1,22 @@
-import { createSignal, createContext, useContext } from "solid-js";
-import { type Accessor } from "solid-js";
-import { cloneDeep } from 'lodash-es';
-
-
+import { createSignal, createContext, createEffect, useContext, onCleanup } from "solid-js";
+import { createStore, unwrap } from "solid-js/store";
+import { cloneDeep } from "lodash-es";
 
 const CoordinationContext = createContext<any>();
 
 export function CoordinationProvider(props: any) {
-  const store = {
+  const store = createStore({
     spec: props.spec,
-    specWithSignals: {
-      ...props.spec,
-      coordinationSpace: Object.fromEntries(
-          Object.entries(props.spec.coordinationSpace || {}).map(([cType, cObj]) => {
-            return [cType, Object.fromEntries(Object.entries(cObj || {}).map(([cKey, cValue]) => {
-              return [cKey, createSignal(cValue)];
-            }))];
-          })
-        ),
-    },
-  };
+    initialSpec: cloneDeep(props.spec),
+    trigger: 0,
+  });
 
+  createEffect(() => {
+    if(store[0].trigger && props.onConfigChange) {
+      props.onConfigChange(unwrap(store[0].spec));
+    }
+  });
+  
   return (
     <CoordinationContext.Provider value={store}>
       {props.children}
@@ -37,16 +33,18 @@ export function capitalize(word: string | null) {
 }
 
 export function useCoordination(viewUid: string, cTypes: string[]) {
-  const store = useCoordinationStore();
-  const spec = store.specWithSignals;
+  const [state, setState] = useCoordinationStore();
 
-  const coordinationScopes = spec.viewCoordination?.[viewUid]?.coordinationScopes;
+  const coordinationScopes = state.spec.viewCoordination?.[viewUid]?.coordinationScopes;
 
   const values = Object.fromEntries(cTypes.map((cType) => ([
-    cType, spec.coordinationSpace[cType][coordinationScopes[cType]][0],
+    cType, () => state.spec.coordinationSpace[cType][coordinationScopes[cType]],
   ])));
   const setters = Object.fromEntries(cTypes.map((cType) => ([
-    `set${capitalize(cType)}`, spec.coordinationSpace[cType][coordinationScopes[cType]][1],
+    `set${capitalize(cType)}`, (newValue: any) => {
+      setState("spec", "coordinationSpace", cType, coordinationScopes[cType], newValue);
+      setState("trigger", state.trigger + 1);
+    },
   ])));
 
   return [values, setters];
