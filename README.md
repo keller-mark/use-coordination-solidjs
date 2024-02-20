@@ -1,4 +1,4 @@
-Proof of concept implementation of `use-coordination` hooks for solid.js using Signals.
+Proof of concept implementation of [useCoordination](https://github.com/keller-mark/use-coordination) hook for solid.js using Signals.
 
 ## Usage
 
