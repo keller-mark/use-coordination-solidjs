@@ -1,3 +1,5 @@
+Proof of concept implementation of `use-coordination` hooks for solid.js using Signals.
+
 ## Usage
 
 Those templates dependencies are maintained via [pnpm](https://pnpm.io) via `pnpm up -Lri`.
