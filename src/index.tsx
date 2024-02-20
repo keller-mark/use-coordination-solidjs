@@ -1,9 +1,6 @@
 /* @refresh reload */
 import { render } from 'solid-js/web';
-
-import './index.css';
-import App from './App';
-import { CounterProvider } from "./hooks.js";
+import App from './App.js';
 
 const root = document.getElementById('root');
 
@@ -13,8 +10,4 @@ if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
   );
 }
 
-render(() => (
-  <CounterProvider count={1}>
-    <App />
-  </CounterProvider>
-), root!);
+render(() => (<App />), root!);
